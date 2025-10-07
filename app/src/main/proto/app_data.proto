@@ -12,6 +12,15 @@ message AppData {
 
   optional int64 foregroundOverlayStartTime = 7;
   optional int64 foregroundOverlayStopTime = 8;
+  optional int64 appDownloadTime = 10;
+  optional int64 lastReviewPromptTime = 11;
+  optional bool reviewPrompted = 12;
+  
+  // Color customization fields
+  optional int32 appBackgroundColor = 13;
+  optional int32 buttonBackgroundColor = 14;
+  // Play button color (defaults to black if unset)
+  optional int32 playButtonColor = 15;
 }
 
 enum DrawingMode {

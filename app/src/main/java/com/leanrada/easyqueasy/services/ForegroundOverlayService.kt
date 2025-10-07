@@ -36,14 +36,30 @@ class ForegroundOverlayService : Service(), SavedStateRegistryOwner {
 
         fun start(context: Context) {
             Log.i(ForegroundOverlayService::class.simpleName, "Intending to start foreground overlay service...")
+            if (isActive) {
+                Log.w(ForegroundOverlayService::class.simpleName, "Service already active, not starting again")
+                return
+            }
             val intent = Intent(context, ForegroundOverlayService::class.java)
-            ContextCompat.startForegroundService(context, intent)
+            try {
+                ContextCompat.startForegroundService(context, intent)
+            } catch (e: Exception) {
+                Log.e(ForegroundOverlayService::class.simpleName, "Failed to start foreground service", e)
+            }
         }
 
         fun stop(context: Context) {
             Log.i(ForegroundOverlayService::class.simpleName, "Intending to stop foreground overlay service...")
+            if (!isActive) {
+                Log.w(ForegroundOverlayService::class.simpleName, "Service not active, nothing to stop")
+                return
+            }
             val intent = Intent(context, ForegroundOverlayService::class.java)
-            context.stopService(intent)
+            try {
+                context.stopService(intent)
+            } catch (e: Exception) {
+                Log.e(ForegroundOverlayService::class.simpleName, "Failed to stop service", e)
+            }
         }
     }
 
@@ -70,6 +86,10 @@ class ForegroundOverlayService : Service(), SavedStateRegistryOwner {
     }
 
     override fun onStartCommand(intent: Intent?, startFlags: Int, startId: Int): Int {
+        if (isActive) {
+            Log.w(ForegroundOverlayService::class.simpleName, "Service already active, ignoring start command")
+            return START_STICKY
+        }
         startOverlay()
         return START_STICKY
     }
@@ -78,6 +98,19 @@ class ForegroundOverlayService : Service(), SavedStateRegistryOwner {
         lifecycleDispatcher.onServicePreSuperOnDestroy()
         super.onDestroy()
         stopOverlay()
+        cleanup()
+    }
+    
+    private fun cleanup() {
+        try {
+            if (::contentView.isInitialized) {
+                // Clear any references to prevent memory leaks
+                val composeView = contentView as? ComposeView
+                composeView?.disposeComposition()
+            }
+        } catch (e: Exception) {
+            Log.e(ForegroundOverlayService::class.simpleName, "Failed to cleanup resources", e)
+        }
     }
 
     @Deprecated("Deprecated in super")
@@ -101,33 +134,59 @@ class ForegroundOverlayService : Service(), SavedStateRegistryOwner {
 
             isActive = true
             runBlocking {
-                appData.dataStore.updateData {
-                    it.toBuilder().setForegroundOverlayStartTime(System.currentTimeMillis()).build()
+                try {
+                    appData.dataStore.updateData {
+                        it.toBuilder().setForegroundOverlayStartTime(System.currentTimeMillis()).build()
+                    }
+                } catch (e: Exception) {
+                    Log.e(ForegroundOverlayService::class.simpleName, "Failed to update overlay start time", e)
                 }
             }
 
-            ForegroundOverlayTileService.requestListeningState(this)
+            try {
+                ForegroundOverlayTileService.requestListeningState(this)
+            } catch (e: Exception) {
+                Log.e(ForegroundOverlayService::class.simpleName, "Failed to request tile listening state", e)
+            }
         } catch (e: Exception) {
             Log.e(ForegroundOverlayService::class.simpleName, "Adding overlay root view failed!", e)
+            // Stop the service if overlay fails to start
+            try {
+                stopSelf()
+            } catch (stopException: Exception) {
+                Log.e(ForegroundOverlayService::class.simpleName, "Failed to stop service", stopException)
+            }
         }
     }
 
     private fun stopOverlay() {
         Log.i(ForegroundOverlayService::class.simpleName, "Stopping foreground overlay service...")
 
-        if (contentView.isAttachedToWindow) {
-            val windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-            windowManager.removeView(contentView)
+        try {
+            if (::contentView.isInitialized && contentView.isAttachedToWindow) {
+                val windowManager = getSystemService(WINDOW_SERVICE) as? WindowManager
+                windowManager?.removeView(contentView)
+            }
+        } catch (e: Exception) {
+            Log.e(ForegroundOverlayService::class.simpleName, "Failed to remove overlay view", e)
         }
 
         isActive = false
         runBlocking {
-            appData.dataStore.updateData {
-                it.toBuilder().setForegroundOverlayStopTime(System.currentTimeMillis()).build()
+            try {
+                appData.dataStore.updateData {
+                    it.toBuilder().setForegroundOverlayStopTime(System.currentTimeMillis()).build()
+                }
+            } catch (e: Exception) {
+                Log.e(ForegroundOverlayService::class.simpleName, "Failed to update overlay stop time", e)
             }
         }
 
-        ForegroundOverlayTileService.requestListeningState(this)
+        try {
+            ForegroundOverlayTileService.requestListeningState(this)
+        } catch (e: Exception) {
+            Log.e(ForegroundOverlayService::class.simpleName, "Failed to request tile listening state on stop", e)
+        }
     }
 
     private fun startForegroundNotification() {
@@ -142,7 +201,7 @@ class ForegroundOverlayService : Service(), SavedStateRegistryOwner {
         notificationManager.createNotificationChannel(channel)
 
         val notification = NotificationCompat.Builder(this, channelID)
-            .setContentTitle("Easy Queasy running")
+            .setContentTitle("Motion Relief running")
             .setContentText("Tap to open")
             .setSmallIcon(R.mipmap.monochrome_logo)
             .setContentIntent(

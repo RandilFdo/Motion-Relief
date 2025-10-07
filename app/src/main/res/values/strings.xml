@@ -1,3 +1,4 @@
 <resources>
-    <string name="easy_queasy">Easy Queasy</string>
+    <string name="easy_queasy">Motion Relief</string>
+    <string name="accessibility_service_description">Motion Relief accessibility service for overlay functionality and motion sickness assistance.</string>
 </resources>

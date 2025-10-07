@@ -16,27 +16,11 @@ val provider = GoogleFont.Provider(
     certificates = R.array.com_google_android_gms_fonts_certs
 )
 
-val bodyFontFamily = FontFamily(
-    Font(
-        googleFont = GoogleFont("Inter"),
-        fontProvider = provider,
-    )
-)
+val bodyFontFamily = FontFamily.Monospace
 
-val titleFontFamily = FontFamily(
-    Font(
-        googleFont = GoogleFont("Inter Tight"),
-        fontProvider = provider,
-    )
-)
+val titleFontFamily = FontFamily.Monospace
 
-val displayFontFamily = FontFamily(
-    Font(
-        googleFont = GoogleFont("Sarabun"),
-        style = FontStyle.Italic,
-        fontProvider = provider,
-    )
-)
+val displayFontFamily = FontFamily.Monospace
 
 // Default Material 3 typography values
 val baseline = Typography()

@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -61,6 +62,22 @@ fun Overlay(
 ) {
     val configuration = LocalConfiguration.current
     val isPreview = previewMode != PreviewMode.NONE
+    
+    // Cache orientation and screen dimensions to prevent recomposition issues
+    val isPortrait by remember(configuration.orientation, configuration.screenWidthDp, configuration.screenHeightDp) {
+        derivedStateOf { 
+            configuration.orientation == Configuration.ORIENTATION_PORTRAIT 
+        }
+    }
+    
+    // Cache screen dimensions for better performance
+    val screenWidth by remember(configuration.screenWidthDp) {
+        derivedStateOf { configuration.screenWidthDp }
+    }
+    
+    val screenHeight by remember(configuration.screenHeightDp) {
+        derivedStateOf { configuration.screenHeightDp }
+    }
 
     val overlayColor by appData.rememberOverlayColor()
     val overlayAreaSize by appData.rememberOverlayAreaSize()
@@ -75,13 +92,18 @@ fun Overlay(
     var currentTimeMillis by remember { mutableLongStateOf(startTimeMillis) }
     var timer by remember { mutableIntStateOf(0) }
 
+    // Cache position and effect state for better performance
     val position = remember { mutableStateListOf(0f, 0f, 0f) }
     val lastPosition = remember { mutableStateListOf(0f, 0f, 0f) }
     var effectIntensity by remember { mutableFloatStateOf(0f) }
+    
+    // Cache sensor data processing for better performance
+    val cachedSensorData = remember { mutableStateOf(Triple(0f, 0f, 0f)) }
+    val lastUpdateTime = remember { mutableLongStateOf(0L) }
 
     val sensorManager = ContextCompat.getSystemService(LocalContext.current, SensorManager::class.java)
 
-    DisposableEffect(sensorManager, isPreview, timer) {
+    DisposableEffect(sensorManager, isPreview, timer, isPortrait, screenWidth, screenHeight) {
         var accelerationListener: SensorEventListener? = null
 
         if (isPreview) {
@@ -90,7 +112,7 @@ fun Overlay(
             currentTimeMillis = now
             position[0] += 0.3f * speedFactor * dt
             timer++
-        } else {
+        } else if (sensorManager != null) {
             accelerationListener = object : SensorEventListener {
                 var lastEventTimeNanos = 0L
                 var lowPass: Array<Float>? = null
@@ -120,7 +142,6 @@ fun Overlay(
                             lowerPass = lowerPass1
                         }
 
-                        val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
                         val indexX = if (isPortrait) 0 else 1
                         val indexY = if (isPortrait) 1 else 0
 
@@ -158,33 +179,52 @@ fun Overlay(
                 override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
             }
 
-            sensorManager?.registerListener(
-                accelerationListener,
-                sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION),
-                SensorManager.SENSOR_DELAY_FASTEST
-            )
+            try {
+                val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
+                if (sensor != null) {
+                    sensorManager.registerListener(
+                        accelerationListener,
+                        sensor,
+                        SensorManager.SENSOR_DELAY_FASTEST
+                    )
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("Overlay", "Failed to register sensor listener", e)
+            }
         }
 
         onDispose {
-            if (accelerationListener != null) {
-                sensorManager?.unregisterListener(accelerationListener)
+            if (accelerationListener != null && sensorManager != null) {
+                try {
+                    sensorManager.unregisterListener(accelerationListener)
+                } catch (e: Exception) {
+                    android.util.Log.e("Overlay", "Failed to unregister sensor listener", e)
+                }
             }
         }
     }
 
     Canvas(modifier = Modifier.fillMaxSize()) {
+        // Cache drawing parameters for better performance
+        val currentTime = currentTimeMillis
+        val timeSinceStart = currentTime - startTimeMillis
         val finalEffectIntensity = when (previewMode) {
             PreviewMode.NONE -> effectIntensity
             else -> 1f
         }
 
-        val startupEffectProgress = (currentTimeMillis - startTimeMillis).toFloat() / startEffectDurationMillis
+        val startupEffectProgress = timeSinceStart.toFloat() / startEffectDurationMillis
         val startupEffectActive = !isPreview && startupEffectProgress in 0f..1f
 
         val baseDotRadius = 4.dp.toPx() * finalEffectIntensity
+        
+        // Cache grid calculations for better performance
+        val gridSizeX = 60f.dp.toPx()
+        val gridSizeY = gridSizeX / hexRatio
+        val screenDepthPx = screenDepth.toPx()
+        val gridSizeZ = screenDepthPx * 0.8f
 
         if (baseDotRadius > 0.15f || startupEffectActive) {
-            val screenDepthPx = screenDepth.toPx()
             val scaledPeripherySizePx = when (previewMode) {
                 PreviewMode.SPEED -> 30.dp.toPx()
                 else -> peripherySize.toPx() *
@@ -212,10 +252,6 @@ fun Overlay(
 
                 else -> Triple(0f, 0f, 0f)
             }
-
-            val gridSizeX = 60f.dp.toPx()
-            val gridSizeY = gridSizeX / hexRatio
-            val gridSizeZ = screenDepthPx * 0.8f
 
             for (x in -2 until (size.width / gridSizeX + 2).toInt()) {
                 for (y in -4 until (size.height / gridSizeY + 4).toInt()) {

@@ -1,10 +1,20 @@
 package com.leanrada.easyqueasy.ui
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -27,9 +37,11 @@ import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
@@ -40,14 +52,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.leanrada.easyqueasy.R
@@ -60,225 +78,194 @@ fun ModeSelect(
     onSelectDrawOverOtherApps: () -> Unit = {},
     onSelectAccessibilityService: () -> Unit = {},
 ) {
+    var selectedMode by remember { mutableStateOf<Int?>(null) }
+    
     BoxWithConstraints {
         val constraints = this
-
-        if (withOnboarding) {
-            Image(
-                painter = painterResource(R.mipmap.ic_launcher_foreground),
-                contentDescription = "",
-                modifier = Modifier
-                    .size(constraints.maxWidth)
-                    .align(Alignment.Center)
-                    .offset(
-                        x = constraints.maxWidth * -0.3f,
-                        y = constraints.maxWidth * -0.6f,
-                    )
-                    .alpha(0.15f),
-            )
-        }
 
         Column(
             verticalArrangement = Arrangement.Center,
             modifier = modifier.verticalScroll(rememberScrollState())
         ) {
-            Column(Modifier.padding(top = 24.dp, start = 40.dp, end = 40.dp)) {
+            // Header section
+            Column(
+                modifier = Modifier.padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 if (withOnboarding) {
+                    Text(
+                        "🍋",
+                        style = MaterialTheme.typography.displayLarge,
+                    )
+                    Spacer(Modifier.height(16.dp))
                     Text(
                         "Ease that quease!",
-                        style = MaterialTheme.typography.displaySmall,
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
                     )
-                    Spacer(Modifier.size(16.dp))
+                    Spacer(Modifier.height(8.dp))
                 }
                 Text(
-                    "Choose your preferred mode",
-                    style =
-                    if (withOnboarding)
-                        MaterialTheme.typography.titleMedium
-                    else
-                        MaterialTheme.typography.titleLarge,
+                    "Choose your mode",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
                 )
                 if (withOnboarding) {
-                    Spacer(Modifier.size(16.dp))
+                    Spacer(Modifier.height(12.dp))
                     Text(
-                        "Get helpful onscreen vestibular signals using any of the following methods. You can change your selection anytime.",
-                        style = MaterialTheme.typography.bodySmall,
+                        "Select how you'd like to activate motion sickness assistance",
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
             }
 
-            Spacer(Modifier.size(24.dp))
+            Spacer(Modifier.height(24.dp))
 
-            val pagerState = rememberPagerState { 2 }
-
-            HorizontalPager(
-                state = pagerState,
-                pageSpacing = 16.dp,
-                pageSize = PageSize.Fixed(constraints.maxWidth - 80.dp),
-                contentPadding = PaddingValues(horizontal = 40.dp),
-                verticalAlignment = Alignment.Top,
-            ) { page ->
-                when (page) {
-                    0 -> ModeCard(color = ModeCardColor.PRIMARY) {
-                        Column(Modifier.padding(16.dp)) {
-                            Text(
-                                "Draw over other apps",
-                                style = MaterialTheme.typography.headlineSmall,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .padding(vertical = 8.dp)
-                                    .fillMaxWidth(),
-                            )
-                            Spacer(Modifier.size(8.dp))
-                            ListItem(
-                                Icons.Filled.Build,
-                                buildAnnotatedString {
-                                    append("Requires ")
-                                    appendBold("Draw over other apps")
-                                    append(" permission.")
-                                }
-                            )
-                            ListItem(
-                                Icons.Filled.PlayArrow,
-                                buildAnnotatedString {
-                                    append("Activate using the ")
-                                    appendBold("in-app button")
-                                    append(" or ")
-                                    appendBold("Quick Settings tile")
-                                    append(".")
-                                }
-                            )
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Illustration(R.mipmap.app_button, "In-app button")
-                                Illustration(R.mipmap.quick_settings_tile, "Quick Settings tile")
-                            }
-                            Spacer(Modifier.size(24.dp))
-                            Button(
-                                onClick = onSelectDrawOverOtherApps,
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                                ),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    "Select mode".uppercase(),
-                                    style = MaterialTheme.typography.labelLarge,
-                                )
-                            }
-                        }
-                    }
-
-                    1 -> ModeCard(color = ModeCardColor.TERTIARY) {
-                        Column(Modifier.padding(16.dp)) {
-                            Text(
-                                "Accessibility service",
-                                style = MaterialTheme.typography.headlineSmall,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .padding(vertical = 8.dp)
-                                    .fillMaxWidth(),
-                            )
-                            Spacer(Modifier.size(8.dp))
-                            ListItem(
-                                Icons.Filled.Build,
-                                buildAnnotatedString {
-                                    append("Requires ")
-                                    appendBold("Accessibility")
-                                    append(" permission.")
-                                }
-                            )
-                            ListItem(
-                                Icons.Filled.Lock,
-                                AnnotatedString("Permission will only be used to draw over other apps.")
-                            )
-                            ListItem(
-                                Icons.Filled.PlayArrow,
-                                buildAnnotatedString {
-                                    append("Activate using Android ")
-                                    appendBold("accessibility shortcuts")
-                                    append(", like a floating button or a swipe gesture.")
-                                }
-                            )
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Illustration(R.mipmap.accessibility_shortcut, "Accessibility shortcut")
-                                Illustration(R.mipmap.accessibility_gesture, "Accessibility gesture")
-                            }
-                            Spacer(Modifier.size(24.dp))
-                            Button(
-                                onClick = onSelectAccessibilityService,
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiary,
-                                    contentColor = MaterialTheme.colorScheme.onTertiary,
-                                ),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    "Select mode".uppercase(),
-                                    style = MaterialTheme.typography.labelLarge,
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+            // Mode selection cards
+            Column(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                repeat(pagerState.pageCount) { iteration ->
-                    val color =
-                        if (pagerState.currentPage == iteration)
-                            MaterialTheme.colorScheme.secondary
-                        else
-                            MaterialTheme.colorScheme.secondaryContainer
-                    Box(
-                        modifier = Modifier
-                            .padding(4.dp)
-                            .clip(CircleShape)
-                            .background(color)
-                            .size(8.dp)
-                    )
-                }
+                // Draw Over Apps Mode
+                AnimatedModeCard(
+                    isSelected = selectedMode == 0,
+                    onClick = { selectedMode = 0 },
+                    title = "Draw Over Apps",
+                    subtitle = "Quick & Easy",
+                    icon = Icons.Filled.PlayArrow,
+                    description = "Tap button or Quick Settings tile",
+                    color = MaterialTheme.colorScheme.primary,
+                    onConfirm = onSelectDrawOverOtherApps
+                )
+
+                // Accessibility Mode
+                AnimatedModeCard(
+                    isSelected = selectedMode == 1,
+                    onClick = { selectedMode = 1 },
+                    title = "Accessibility Service",
+                    subtitle = "Always Available",
+                    icon = Icons.Filled.Lock,
+                    description = "Use accessibility shortcuts",
+                    color = MaterialTheme.colorScheme.tertiary,
+                    onConfirm = onSelectAccessibilityService
+                )
             }
+
+            Spacer(Modifier.height(32.dp))
         }
     }
 }
 
-enum class ModeCardColor {
-    PRIMARY,
-    TERTIARY
-}
-
 @Composable
-private fun ModeCard(
-    color: ModeCardColor,
-    content: @Composable ColumnScope.() -> Unit
+private fun AnimatedModeCard(
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    description: String,
+    color: androidx.compose.ui.graphics.Color,
+    onConfirm: () -> Unit
 ) {
-    Card(
-        colors = when (color) {
-            ModeCardColor.PRIMARY -> CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
+    val scale by animateFloatAsState(
+        targetValue = if (isSelected) 1.02f else 1f,
+        animationSpec = tween(200),
+        label = "cardScale"
+    )
+    
+    val elevation by animateFloatAsState(
+        targetValue = if (isSelected) 8f else 2f,
+        animationSpec = tween(200),
+        label = "cardElevation"
+    )
 
-            ModeCardColor.TERTIARY -> CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-            )
-        },
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .scale(scale)
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) 
+                color.copy(alpha = 0.1f) 
+            else 
+                MaterialTheme.colorScheme.surface
+        ),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation.dp)
     ) {
-        content()
+        Column(
+            modifier = Modifier.padding(24.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = color
+                    )
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+                
+                AnimatedVisibility(
+                    visible = isSelected,
+                    enter = scaleIn() + fadeIn(),
+                    exit = scaleOut() + fadeOut()
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Check,
+                        contentDescription = "Selected",
+                        tint = color,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+            )
+            
+            AnimatedVisibility(
+                visible = isSelected,
+                enter = slideInHorizontally() + fadeIn(),
+                exit = slideOutHorizontally() + fadeOut()
+            ) {
+                Column {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = onConfirm,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = color,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = "Select This Mode",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 

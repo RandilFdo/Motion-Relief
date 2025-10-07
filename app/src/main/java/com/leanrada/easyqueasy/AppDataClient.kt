@@ -23,13 +23,18 @@ import java.io.InputStream
 import java.io.OutputStream
 
 class AppDataClient(context: Context, scope: CoroutineScope) {
-    val dataStore: DataStore<AppData> = MultiProcessDataStoreFactory.create(
-        serializer = AppDataSerializer(),
-        produceFile = {
-            File("${context.cacheDir.path}/app_data.pb")
-        },
-        scope = scope
-    )
+    val dataStore: DataStore<AppData> = try {
+        MultiProcessDataStoreFactory.create(
+            serializer = AppDataSerializer(),
+            produceFile = {
+                File("${context.cacheDir.path}/app_data.pb")
+            },
+            scope = scope
+        )
+    } catch (e: Exception) {
+        Log.e(AppDataClient::class.simpleName, "Failed to create DataStore", e)
+        throw e
+    }
 
     @Composable
     fun rememberLoaded(): State<Boolean> = dataStore.data.map { true }.collectAsState(initial = false)
@@ -109,6 +114,61 @@ class AppDataClient(context: Context, scope: CoroutineScope) {
         { data, value -> data.foregroundOverlayStopTime = value },
         0L,
     )
+
+    @Composable
+    fun rememberAppDownloadTime(): MutableState<Long> = rememberAppData(
+        dataStore,
+        { data -> data.hasAppDownloadTime() },
+        { data -> data.appDownloadTime },
+        { data, value -> data.appDownloadTime = value },
+        0L, // Default to 0, will be set when first needed
+    )
+
+    @Composable
+    fun rememberLastReviewPromptTime(): MutableState<Long> = rememberAppData(
+        dataStore,
+        { data -> data.hasLastReviewPromptTime() },
+        { data -> data.lastReviewPromptTime },
+        { data, value -> data.lastReviewPromptTime = value },
+        0L,
+    )
+
+    @Composable
+    fun rememberReviewPrompted(): MutableState<Boolean> = rememberAppData(
+        dataStore,
+        { data -> data.hasReviewPrompted() },
+        { data -> data.reviewPrompted },
+        { data, value -> data.reviewPrompted = value },
+        false,
+    )
+
+    @Composable
+    fun rememberAppBackgroundColor(): MutableState<Int> = rememberAppData(
+        dataStore,
+        { data -> data.hasAppBackgroundColor() },
+        { data -> data.appBackgroundColor },
+        { data, value -> data.appBackgroundColor = value },
+        0xFFFFFFFF.toInt(), // Default white
+    )
+
+    @Composable
+    fun rememberButtonBackgroundColor(): MutableState<Int> = rememberAppData(
+        dataStore,
+        { data -> data.hasButtonBackgroundColor() },
+        { data -> data.buttonBackgroundColor },
+        { data, value -> data.buttonBackgroundColor = value },
+        0xFF000000.toInt(), // Default black
+    )
+
+    @Composable
+    fun rememberPlayButtonColor(): MutableState<Int> = rememberAppData(
+        dataStore,
+        { data -> data.hasPlayButtonColor() },
+        { data -> data.playButtonColor },
+        { data, value -> data.playButtonColor = value },
+        0xFF000000.toInt(), // Default black
+    )
+
 }
 
 class AppDataSerializer : Serializer<AppData> {
@@ -137,7 +197,7 @@ private fun <T> rememberAppData(
     val coroutineScope = rememberCoroutineScope()
 
     val state = dataStore.data
-        .map { get(it) }
+        .map { data -> if (has(data)) get(data) else initial }
         .collectAsState(initial)
 
     return object : MutableState<T> {

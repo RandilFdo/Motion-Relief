@@ -1,17 +1,13 @@
 package com.leanrada.easyqueasy.ui.theme
 import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -54,43 +50,6 @@ private val lightScheme = lightColorScheme(
 //    surfaceContainerHighest = surfaceContainerHighestLight,
 )
 
-private val darkScheme = darkColorScheme(
-    primary = primaryDark,
-    onPrimary = onPrimaryDark,
-    primaryContainer = primaryContainerDark,
-    onPrimaryContainer = onPrimaryContainerDark,
-    secondary = secondaryDark,
-    onSecondary = onSecondaryDark,
-    secondaryContainer = secondaryContainerDark,
-    onSecondaryContainer = onSecondaryContainerDark,
-    tertiary = tertiaryDark,
-    onTertiary = onTertiaryDark,
-    tertiaryContainer = tertiaryContainerDark,
-    onTertiaryContainer = onTertiaryContainerDark,
-    error = errorDark,
-    onError = onErrorDark,
-    errorContainer = errorContainerDark,
-    onErrorContainer = onErrorContainerDark,
-    background = backgroundDark,
-    onBackground = onBackgroundDark,
-    surface = surfaceDark,
-    onSurface = onSurfaceDark,
-    surfaceVariant = surfaceVariantDark,
-    onSurfaceVariant = onSurfaceVariantDark,
-    outline = outlineDark,
-    outlineVariant = outlineVariantDark,
-    scrim = scrimDark,
-    inverseSurface = inverseSurfaceDark,
-    inverseOnSurface = inverseOnSurfaceDark,
-    inversePrimary = inversePrimaryDark,
-//    surfaceDim = surfaceDimDark,
-//    surfaceBright = surfaceBrightDark,
-//    surfaceContainerLowest = surfaceContainerLowestDark,
-//    surfaceContainerLow = surfaceContainerLowDark,
-//    surfaceContainer = surfaceContainerDark,
-//    surfaceContainerHigh = surfaceContainerHighDark,
-//    surfaceContainerHighest = surfaceContainerHighestDark,
-)
 
 private val mediumContrastLightColorScheme = lightColorScheme(
     primary = primaryLightMediumContrast,
@@ -168,81 +127,7 @@ private val highContrastLightColorScheme = lightColorScheme(
 //    surfaceContainerHighest = surfaceContainerHighestLightHighContrast,
 )
 
-private val mediumContrastDarkColorScheme = darkColorScheme(
-    primary = primaryDarkMediumContrast,
-    onPrimary = onPrimaryDarkMediumContrast,
-    primaryContainer = primaryContainerDarkMediumContrast,
-    onPrimaryContainer = onPrimaryContainerDarkMediumContrast,
-    secondary = secondaryDarkMediumContrast,
-    onSecondary = onSecondaryDarkMediumContrast,
-    secondaryContainer = secondaryContainerDarkMediumContrast,
-    onSecondaryContainer = onSecondaryContainerDarkMediumContrast,
-    tertiary = tertiaryDarkMediumContrast,
-    onTertiary = onTertiaryDarkMediumContrast,
-    tertiaryContainer = tertiaryContainerDarkMediumContrast,
-    onTertiaryContainer = onTertiaryContainerDarkMediumContrast,
-    error = errorDarkMediumContrast,
-    onError = onErrorDarkMediumContrast,
-    errorContainer = errorContainerDarkMediumContrast,
-    onErrorContainer = onErrorContainerDarkMediumContrast,
-    background = backgroundDarkMediumContrast,
-    onBackground = onBackgroundDarkMediumContrast,
-    surface = surfaceDarkMediumContrast,
-    onSurface = onSurfaceDarkMediumContrast,
-    surfaceVariant = surfaceVariantDarkMediumContrast,
-    onSurfaceVariant = onSurfaceVariantDarkMediumContrast,
-    outline = outlineDarkMediumContrast,
-    outlineVariant = outlineVariantDarkMediumContrast,
-    scrim = scrimDarkMediumContrast,
-    inverseSurface = inverseSurfaceDarkMediumContrast,
-    inverseOnSurface = inverseOnSurfaceDarkMediumContrast,
-    inversePrimary = inversePrimaryDarkMediumContrast,
-//    surfaceDim = surfaceDimDarkMediumContrast,
-//    surfaceBright = surfaceBrightDarkMediumContrast,
-//    surfaceContainerLowest = surfaceContainerLowestDarkMediumContrast,
-//    surfaceContainerLow = surfaceContainerLowDarkMediumContrast,
-//    surfaceContainer = surfaceContainerDarkMediumContrast,
-//    surfaceContainerHigh = surfaceContainerHighDarkMediumContrast,
-//    surfaceContainerHighest = surfaceContainerHighestDarkMediumContrast,
-)
 
-private val highContrastDarkColorScheme = darkColorScheme(
-    primary = primaryDarkHighContrast,
-    onPrimary = onPrimaryDarkHighContrast,
-    primaryContainer = primaryContainerDarkHighContrast,
-    onPrimaryContainer = onPrimaryContainerDarkHighContrast,
-    secondary = secondaryDarkHighContrast,
-    onSecondary = onSecondaryDarkHighContrast,
-    secondaryContainer = secondaryContainerDarkHighContrast,
-    onSecondaryContainer = onSecondaryContainerDarkHighContrast,
-    tertiary = tertiaryDarkHighContrast,
-    onTertiary = onTertiaryDarkHighContrast,
-    tertiaryContainer = tertiaryContainerDarkHighContrast,
-    onTertiaryContainer = onTertiaryContainerDarkHighContrast,
-    error = errorDarkHighContrast,
-    onError = onErrorDarkHighContrast,
-    errorContainer = errorContainerDarkHighContrast,
-    onErrorContainer = onErrorContainerDarkHighContrast,
-    background = backgroundDarkHighContrast,
-    onBackground = onBackgroundDarkHighContrast,
-    surface = surfaceDarkHighContrast,
-    onSurface = onSurfaceDarkHighContrast,
-    surfaceVariant = surfaceVariantDarkHighContrast,
-    onSurfaceVariant = onSurfaceVariantDarkHighContrast,
-    outline = outlineDarkHighContrast,
-    outlineVariant = outlineVariantDarkHighContrast,
-    scrim = scrimDarkHighContrast,
-    inverseSurface = inverseSurfaceDarkHighContrast,
-    inverseOnSurface = inverseOnSurfaceDarkHighContrast,
-    inversePrimary = inversePrimaryDarkHighContrast,
-//    surfaceDim = surfaceDimDarkHighContrast,
-//    surfaceBright = surfaceBrightDarkHighContrast,
-//    surfaceContainerLowest = surfaceContainerLowestDarkHighContrast,
-//    surfaceContainerLow = surfaceContainerLowDarkHighContrast,
-//    surfaceContainer = surfaceContainerDarkHighContrast,
-//    surfaceContainerHigh = surfaceContainerHighDarkHighContrast,
-//    surfaceContainerHighest = surfaceContainerHighestDarkHighContrast,
-)
 
 @Immutable
 data class ColorFamily(
@@ -258,33 +143,66 @@ val unspecified_scheme = ColorFamily(
 
 @Composable
 fun AppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Custom colors
+    customAppBackgroundColor: Int? = null,
+    customButtonBackgroundColor: Int? = null,
     content: @Composable() () -> Unit
 ) {
-  val colorScheme = when {
-      dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-          val context = LocalContext.current
-          if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-      }
-      
-      darkTheme -> darkScheme
-      else -> lightScheme
-  }
+  // FORCE WHITE BACKGROUND WITH BLACK TEXT/BUTTONS - NO THEME DETECTION
+  val customColor = Color(customAppBackgroundColor ?: 0xFFFFFFFF.toInt())
+  val customButtonColor = Color(customButtonBackgroundColor ?: 0xFF000000.toInt())
+  
+  // Ensure no noisy logs in release
+  
+  // FORCE white background with black text by default, only change when manually customized
+  val isDefaultWhite = customAppBackgroundColor == null || customAppBackgroundColor == 0xFFFFFFFF.toInt()
+  val textColor = if (isDefaultWhite) Color.Black else (if (customColor.luminance() > 0.5f) Color.Black else Color.White)
+  
+  // ALWAYS use white background with black text/buttons by default
+  val colorScheme = lightScheme.copy(
+      background = customColor,
+      surface = customColor,
+      onBackground = textColor, // Black by default, smart when customized
+      onSurface = textColor, // Black by default, smart when customized
+      primary = customButtonColor,
+      onPrimary = if (customButtonColor.luminance() > 0.5f) Color.Black else Color.White,
+      primaryContainer = customButtonColor,
+      onPrimaryContainer = if (customButtonColor.luminance() > 0.5f) Color.Black else Color.White,
+      secondary = customButtonColor,
+      onSecondary = if (customButtonColor.luminance() > 0.5f) Color.Black else Color.White,
+      tertiary = customButtonColor,
+      onTertiary = if (customButtonColor.luminance() > 0.5f) Color.Black else Color.White,
+      error = Color.Red,
+      onError = Color.White,
+      surfaceVariant = customColor,
+      onSurfaceVariant = textColor,
+      outline = Color.Black,
+      outlineVariant = Color.Gray,
+      scrim = Color.Black.copy(alpha = 0.5f),
+      inverseSurface = Color.Black,
+      inversePrimary = Color.White
+  )
   val view = LocalView.current
   if (!view.isInEditMode) {
     SideEffect {
       val window = (view.context as Activity).window
-      window.statusBarColor = colorScheme.primary.toArgb()
-      WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+      window.statusBarColor = android.graphics.Color.TRANSPARENT
+      window.setBackgroundDrawableResource(android.R.color.transparent)
+      // ALWAYS use light status bars (black text) by default, only change when manually customized
+      WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = isDefaultWhite || customColor.luminance() > 0.5f
     }
   }
 
   MaterialTheme(
     colorScheme = colorScheme,
     typography = AppTypography,
-    content = content
-  )
+  ) {
+    androidx.compose.material3.Surface(
+      color = colorScheme.background,
+      contentColor = colorScheme.onBackground
+    ) {
+      content()
+    }
+  }
 }
 
