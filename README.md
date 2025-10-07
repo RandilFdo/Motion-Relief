@@ -2,10 +2,9 @@
 
 A gentle visual overlay app designed to help reduce motion discomfort while using your Android device. Motion Relief adds subtle, animated periphery dots that can provide visual stability during scrolling, gaming, and other motion-heavy activities.
 
-![WhatsApp Image 2025-09-22 at 12 44 15_0cb72cd2](https://github.com/user-attachments/assets/259506bd-dc79-4ab6-bf22-a9aadaf6f0d0) ![WhatsApp Image 2025-09-08 at 20 21 06_6cfb90a9](https://github.com/user-attachments/assets/697839d1-6f0e-4f9a-b30b-d0af1cd51463)
+![WhatsApp Image 2025-09-08 at 20 21 06_6cfb90a9](https://github.com/user-attachments/assets/697839d1-6f0e-4f9a-b30b-d0af1cd51463)
 
 <img width="1024" height="1024" alt="98f0c241-423a-45fa-ab56-1d1c80759ba9" src="https://github.com/user-attachments/assets/d0664796-a92d-4053-afa0-fbe6526a8447" />
-![WhatsApp Image 2025-09-08 at 20 21 07_6c3b31d1](https://github.com/user-attachments/assets/77cd8972-10fd-4498-815b-579f79912a4d)
 
 ## Features
 
